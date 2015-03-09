@@ -17,12 +17,14 @@ module Enumerize
 
       def _define_scope_methods!(name, options)
         scope_name = options[:scope] == true ? "with_#{name}" : options[:scope]
-
         define_singleton_method scope_name do |*values|
-          values = enumerized_attributes[name].find_values(*values).map(&:value)
-          values = values.first if values.size == 1
-
-          where(name => values)
+          values.reject!(&:blank?)
+          if values.blank?
+            return all
+          else
+            values = enumerized_attributes[name].find_values(*values).map(&:value)
+            where(name => values)   
+          end
         end
 
         if options[:scope] == true
